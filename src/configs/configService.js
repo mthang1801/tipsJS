@@ -32,7 +32,9 @@ class ConfigService {
 	app() {
         console.log(`${nodeEnv}_APP_PORT`)
 		return {
-			port: this.getValue(`${nodeEnv}_APP_PORT`)
+			port: this.getValue(`${nodeEnv}_APP_PORT`),
+			accessTokenExpiresIn: this.getValue(`${nodeEnv}_ACCESS_TOKEN_EXPIRES_IN`),
+			refreshTokenExpiresIn: this.getValue(`${nodeEnv}_REFRESH_TOKEN_EXPIRES_IN`),
 		};
 	}
 
@@ -45,6 +47,8 @@ class ConfigService {
 			dbName: this.getValue(`${nodeEnv}_DB_NAME`)
 		};
 	}
+    
+    
 }
 const configService = new ConfigService(process.env).getValues(envKeys)
 
