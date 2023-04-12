@@ -9,7 +9,7 @@ const statusCode = {
 	}
 };
 
-class BaseController {
+class SuccessResponse {
 	_message = '';
 	_metadata = null;
 	_res;
@@ -73,4 +73,4 @@ class BaseController {
 	}
 }
 
-module.exports = BaseController;
+module.exports = SuccessResponse;

@@ -6,15 +6,14 @@ const KeyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
 const { default: mongoose } = require('mongoose');
 const { getSpecificData } = require('../utils');
+const {ConflictRequestError} = require("../core/error.response")
 class ShopService {
 	keyTokenService = KeyTokenService;
 
 	static async signUp({ name, email, password }) {
 		const holderShop = await ShopModel.findOne({ email }).lean();
 		if (holderShop) {
-			const error = new Error('Shop has already existed.');
-			error.code = 409;
-			throw error;
+			throw new ConflictRequestError()
 		}
 
 		const salt = await bcrypt.genSalt();

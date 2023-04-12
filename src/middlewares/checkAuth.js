@@ -15,7 +15,7 @@ const checkApiKey = async (req, res, next) => {
 		if (!objKey) {
 			throwError(ERROR_MESSAGES_CODE.forbiddenResources);
 		}
-        req.objKey = objKey;
+		req.objKey = objKey;
 		return next();
 	} catch (error) {
 		next(error);
@@ -35,4 +35,14 @@ const checkPermission = (permission) => {
 	};
 };
 
-module.exports = { checkApiKey, checkPermission };
+const asyncHandler = (fn) => {
+	return async (req, res, next) => {
+		try {
+			await fn(req, res, next);
+		} catch (error) {            
+			next(error);
+		}
+	};
+};
+
+module.exports = { checkApiKey, checkPermission, asyncHandler };
