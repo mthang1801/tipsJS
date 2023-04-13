@@ -16,8 +16,14 @@ class SuccessResponse {
 	_paging = null;
 	_code = 200;
 	_status = 'success';
+	static _instance = null;
 
-	constructor() {}
+	constructor() {
+		if (SuccessResponse._instance) {
+			return SuccessResponse._instance;
+		}
+		SuccessResponse._instance = this;
+	}
 
 	setCode(code) {
 		this._code = code;
@@ -73,4 +79,4 @@ class SuccessResponse {
 	}
 }
 
-module.exports = SuccessResponse;
+module.exports = new SuccessResponse();
