@@ -63,7 +63,7 @@ class SuccessResponse {
 	}
 
 	resOk(res, data = null, message = '') {
-		this.setVariables(res, statusCode.httpOk, data, message);
+		this.setVariables(res, statusCode.ok, data, message);
 		return this.resTemplate();
 	}
 

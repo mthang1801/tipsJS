@@ -13,7 +13,7 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
 			expiresIn: AppConfig.refreshTokenExpiresIn
 		});      
         const decode = await jwt.verify(accessToken, publicKey);
-        console.log("decode::", decode)
+        
 		return { accessToken, refreshToken };
 	} catch (error) {
 		return error;

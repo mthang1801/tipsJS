@@ -1,0 +1,10 @@
+{
+    "rest-client.environmentVariables" : {
+        "$shared" : {
+            "apiKey" : "my-api-key-123"
+        },
+        "Local Env" : {
+            "hostname" : "http://localhost:5000/api/v1"
+        }
+    }
+}

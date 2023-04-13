@@ -13,9 +13,12 @@ const keyTokenSchema = new Schema({
 		required: true,
         unique: true
 	},
+    usedRefreshTokens : {
+        type: Array,
+        default: []
+    },
 	refreshToken: {
-		type: Schema.Types.Array,
-		default: []
+		type: String,		
 	}
 }, {timestamps : true});
 

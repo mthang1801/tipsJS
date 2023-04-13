@@ -1,51 +1,17 @@
 const ShopModel = require('../models/shop.model');
-const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const KeyTokenModel = require('../models/keyToken.model');
-const KeyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
-const { default: mongoose } = require('mongoose');
 const { getSpecificData } = require('../utils');
-const {ConflictRequestError} = require("../core/error.response")
 class ShopService {
-	keyTokenService = KeyTokenService;
+	static async findByEmail(
+		email,
+		select = { email: 1, password: 1, roles: 1, status: 1, name: 1, salt: 1, verify: 1 }
+	) {
+		return await ShopModel.findOne({ email }).select(select).lean();
+	}
 
-	static async signUp({ name, email, password }) {
-		const holderShop = await ShopModel.findOne({ email }).lean();
-		if (holderShop) {
-			throw new ConflictRequestError()
-		}
-
-		const salt = await bcrypt.genSalt();
-		const hashedPwd = await bcrypt.hash(password, salt);
-
-		const newShop = await ShopModel.create({
-			name,
-			email,
-			password: hashedPwd,
-			salt
-		});
-		const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-			modulusLength: 4096,
-			publicKeyEncoding: {
-				type: 'pkcs1',
-				format: 'pem'
-			},
-			privateKeyEncoding: {
-				type: 'pkcs1',
-				format: 'pem'
-			}
-		});
-
-		const publicKeyString = await KeyTokenService.create({ userId: newShop._id, publicKey });
-		const publicKeyObj = crypto.createPublicKey(publicKeyString);
-
-		const tokens = await createTokenPair({ userId: newShop._id, email }, publicKeyObj, privateKey);
-
-		return {
-			shop: getSpecificData(newShop, ["_id", "email", "name", "verify", "status"]) ,
-			tokens
-		};
+	static filteredData(shop) {
+		return getSpecificData(shop, ['_id', 'email', 'name', 'verify', 'status']);
 	}
 }
 

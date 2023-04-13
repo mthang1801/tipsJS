@@ -1,6 +1,6 @@
-const shopRouter = require("./shop")
-const router = require("../../helper/router");
+const authRouter = require('./auth');
+const router = require('../../helper/router');
 
-router.use("/v1/shop", shopRouter);
+router.use('/v1/auth', authRouter);
 
 module.exports = router;
