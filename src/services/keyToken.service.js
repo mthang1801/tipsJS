@@ -1,15 +1,18 @@
-const { createTokenPair } = require('../auth/authUtils');
+const { Types } = require('mongoose');
+const jwt = require('jsonwebtoken');
 const KeyTokenModel = require('../models/keyToken.model');
 const crypto = require('crypto');
+const { AppConfig } = require('../configs');
 
 class KeyTokenService {
-	static async saveKeyToken({ userId, publicKey, refreshToken }) {
+	static async saveKeyToken({ userId, publicKey, privateKey, refreshToken, usedRefreshTokens = [] }) {
 		try {
 			const filter = { userId };
 			const update = {
 				publicKey,
 				refreshToken,
-				usedRefreshTokens: []
+				privateKey,
+				usedRefreshTokens
 			};
 			const options = {
 				upsert: true,
@@ -40,11 +43,44 @@ class KeyTokenService {
 
 		const publicKeyObj = crypto.createPublicKey(publicKeyString);
 
-		const { refreshToken, accessToken } = await createTokenPair(data, publicKeyObj, privateKey);
-        
-		await this.saveKeyToken({ userId: data._id, publicKey: publicKeyString, refreshToken });       
+		const { refreshToken, accessToken } = await this.createTokenPair(data, publicKeyObj, privateKey);
 
-		return { refreshToken, accessToken };
+		return { refreshToken, accessToken, publicKeyString, privateKey };
+	};
+
+	static createTokenPair = async (payload, publicKey, privateKey) => {
+		try {
+			const accessToken = await jwt.sign(payload, privateKey, {
+				algorithm: 'RS256',
+				expiresIn: AppConfig.accessTokenExpiresIn
+			});
+
+			const refreshToken = await jwt.sign(payload, privateKey, {
+				algorithm: 'RS256',
+				expiresIn: AppConfig.refreshTokenExpiresIn
+			});
+
+			return { accessToken, refreshToken };
+		} catch (error) {
+			return error;
+		}
+	};
+
+	static findByUserId = async (userId) => await KeyTokenModel.findOne({ userId });
+
+	static deleteById = async (_id) => await KeyTokenModel.deleteOne({ _id });
+
+	static findUsedKeyToken = async (refreshToken) => await KeyTokenModel.findOne({ usedRefreshTokens: refreshToken });
+
+	static deleteByUserId = async (userId) => await KeyTokenModel.findOneAndDelete({ userId });
+
+	static findByRefreshToken = async (refreshToken) => await KeyTokenModel.findOne({ refreshToken });
+
+	static updateRefreshToken = async (_id, { refreshToken, usedRefreshToken }) => {
+		await KeyTokenModel.updateOne(
+			{ _id },
+			{ $set: { refreshToken }, $addToSet: { usedRefreshTokens: usedRefreshToken } }
+		);
 	};
 }
 

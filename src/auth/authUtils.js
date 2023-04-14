@@ -1,25 +1,61 @@
 const jwt = require('jsonwebtoken');
-const { AppConfig } = require('../configs');
+const asyncHandler = require('../helper/asyncHandler');
+const { HEADER_API_KEY } = require('../constants');
+const KeyTokenService = require('../services/keyToken.service');
+const { AuthenticationFail, NotFoundError } = require('../core/error.response');
 
-const createTokenPair = async (payload, publicKey, privateKey) => {
+exports.authentication = asyncHandler(async (req, res, next) => {
+	const userId = req.headers[HEADER_API_KEY.CLIENT_ID];
+	if (!userId) throw new AuthenticationFail();
+
+	const keyTokenStore = await KeyTokenService.findByUserId(userId);
+	if (!keyTokenStore) throw new NotFoundError();
+
+	const accessToken = req.headers[HEADER_API_KEY.AUTHORIZATION];
+	if (!accessToken) throw new AuthenticationFail('Invalid request');
+
 	try {
-		const accessToken = await jwt.sign(payload, privateKey, {
-			algorithm: 'RS256',
-			expiresIn: AppConfig.accessTokenExpiresIn
-		});
-
-		const refreshToken = await jwt.sign(payload, privateKey, {
-			algorithm: 'RS256',
-			expiresIn: AppConfig.refreshTokenExpiresIn
-		});      
-        const decode = await jwt.verify(accessToken, publicKey);
-        
-		return { accessToken, refreshToken };
-	} catch (error) {
-		return error;
+		const decode = decodeToken(accessToken, keyTokenStore.publicKey);
+		if (userId !== decode._id?.toString()) throw new AuthenticationFail('Invalid request');
+		req.keyStore = keyTokenStore;
+		return next();
+	} catch (err) {
+		throw err;
 	}
-};
+});
 
-module.exports = {
-	createTokenPair
-};
+exports.authenticationV2 = asyncHandler(async (req, res, next) => {
+	const userId = req.headers[HEADER_API_KEY.CLIENT_ID];
+	if (!userId) throw new AuthenticationFail();
+
+	const keyTokenStore = await KeyTokenService.findByUserId(userId);
+	if (!keyTokenStore) throw new NotFoundError();
+
+	const refreshToken = req.headers[HEADER_API_KEY.REFRESH_TOKEN];
+
+	if (refreshToken) {
+		try {
+			const decode = jwt.verify(refreshToken, keyTokenStore.publicKey);
+			if (userId !== decode._id?.toString()) throw new AuthenticationFail('Invalid request');
+			req.keyStore = keyTokenStore;
+			req.user = decode;
+			req.refreshToken = refreshToken;
+			return next();
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	const accessToken = req.headers[HEADER_API_KEY.AUTHORIZATION];
+	if (!accessToken) throw new AuthenticationFail('Invalid request');
+
+	try {
+		const decode = jwt.verify(accessToken, keyTokenStore.publicKey);
+		if (userId !== decode._id?.toString()) throw new AuthenticationFail('Invalid request');
+		req.keyStore = keyTokenStore;
+		return next();
+	} catch (err) {
+		throw err;
+	}
+});
+

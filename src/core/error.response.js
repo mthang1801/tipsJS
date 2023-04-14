@@ -22,14 +22,27 @@ class BadRequestError extends ErrorResponse {
 	}
 }
 
+class NotFoundError extends ErrorResponse {
+	constructor(message = ERROR_MESSAGES_CODE.notFound.message, code = ERROR_MESSAGES_CODE.notFound.code) {
+		super(message, code);
+	}
+}
+class AuthenticationFail extends ErrorResponse {
+	constructor(message = ERROR_MESSAGES_CODE.authenFail.message, code = ERROR_MESSAGES_CODE.authenFail.code) {
+		super(message, code);
+	}
+}
+
 class HttpException extends ErrorResponse {
-    constructor(message, code) {
-        super(message, code);
-    }
+	constructor(message, code) {
+		super(message, code);
+	}
 }
 
 module.exports = {
-    ConflictRequestError,
-    BadRequestError,
-    HttpException
-}
+	ConflictRequestError,
+	BadRequestError,
+	AuthenticationFail,
+    NotFoundError,
+	HttpException
+};

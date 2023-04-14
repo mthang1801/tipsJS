@@ -1,6 +1,8 @@
 exports.HEADER_API_KEY = {
 	API_KEY: 'x-api-key',
-	AUTHORIZATION: 'authorization'
+	AUTHORIZATION: 'authorization',
+    REFRESH_TOKEN: "refresh-token",
+    CLIENT_ID: "x-client-id"
 };
 
 exports.ERROR_MESSAGES_CODE = {
@@ -23,5 +25,9 @@ exports.ERROR_MESSAGES_CODE = {
     badRequest : {
         message: "Bad Request",
         code : 400
+    },
+    authenFail : {
+        message: "Authentication Fail",
+        code : 401
     }
 };
