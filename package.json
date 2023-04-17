@@ -19,7 +19,8 @@
     "helmet": "^6.1.2",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
-    "mongoose": "^7.0.3"
+    "mongoose": "^7.0.3",
+    "socket.io": "^2.5.0"
   },
   "devDependencies": {
     "morgan": "^1.10.0"
